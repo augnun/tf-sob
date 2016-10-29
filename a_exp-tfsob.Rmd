@@ -1,0 +1,176 @@
+---
+title: "Análise Exploratória - Trabalho final de Análise de Sobrevivência"
+author:
+- Augusto Cesar Ribeiro Nunes - 13/0103004
+- Isabela Paranhos Pinto - 11/0013450
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
+---
+```{r dados, echo=FALSE, message=FALSE, warnings=FALSE}
+actg320 <- read.csv("actg320.dat", sep="", header = F)
+names(actg320) <- c("id", "time", "censor", "time_d", "censor_d",
+                    "tx", "txgrp", "strat2", "sex", "raceth",
+                    "ivdrug", "hemophil", "karnof", "cd4",
+                    "priorzdv", "age")
+```
+
+
+# Descrição
+  Os dados foram obtidos por um experimento duplo-cego, controlado com  _placebo_ que comparou o tratamento com três drogas composto por indinavir (IDV), zidovudina de rótulo aberto (ZDV) ou stavudina (d4T) e lamivudina (3TC) com o tratamento com duas drogas composto por zidovudina ou stavudina e lamivudina em pacientes infectados pelo HIV. Os pacientes foram aceitos para o experimento se sua contagem de células CD4 por milímetro cúbico não excedia 200, e se tiveram pelo menos três meses de terapia prévia com zidovudina. A aleatorização foi estratificada pela contagem de células CD4 no momento da avaliação. A medida primária de resultado foi o tempo até um evento definidor de AIDS ou a morte. Resultados de eficácia a um nível de significância pré-estabelecido foram alcançados durante a execução do experimento, e por isso o mesmo foi interrompido prematuramente.
+  
+# Referência
+* HAMMER et al. (1997), "A Controlled Trial of Two Nucleoside Analogues plus Indinavir in Persons with Human Immunodeficiency Virus Infection and CD4 Cell Counts of 200 per Cubic Millimeter or Less", The New England Journal of Medicine, http://www.nejm.org/doi/full/10.1056/NEJM199709113371101#t=article
+
+* HOSMER, D.W. and LEMESHOW, S. e MAY, S. (2008) 
+"Applied Survival Analysis: Regression Modeling of Time to Event Data: 
+Second Edition", John Wiley and Sons Inc., New York, NY
+
+# Lista de Variáveis
+```{r table-simple, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+require(pander)
+panderOptions('table.split.table', Inf)
+set.caption("Tabela 1: Lista de Variáveis e respectivas descrições e códigos")
+meus.dados <- "  Variável       | Nome           | Descrição | Código
+  1      | id | Código de Identificação |1-1156
+  2      | time | Tempo até o diagnóstico de AIDS ou morte | Dias
+  3      | censor | Indicador para diagnóstico de AIDS ou morte | 1 = Morte ; 0 cc.
+  4      | time_d | Tempo até a morte | Dias
+  5      | censor_d | Indicador para morte (somente) | 1 = Morte ; 0 cc.
+  6      | tx | Indicador de Tratamento | 1 = Tratamento inclui IDV ; 0 cc.
+  7      | txgrp | Indicador de Grupo de Tratamento | 1 = ZDV + 3TC; 2 = ZDV + 3TC + IDV; 3 = d4T + 3TC; 4 = d4T + 3TC + IDV
+  8      | strat2 | Estrato CD4 na avaliação | 0 = CD4 <= 50 ; 1 = CD4 > 50
+  9      | sex | Sexo | 1 = Homem ; 2 = Mulher
+  10     | raceth | Raça/Etnia | 1 = Branco Não-Hispânico ; 2 = Negro Não-Hispânico ; 3 = Hispânico (Independentemente) ; 4 = Asiático, Ilhas do Pacífico ; 5 = Indo-Americano, Nativo do Alasca
+  11     | ivdrug | Histórico de uso de droga endovenosa | 1 = Nunca; 2 = Atualmente ; 3 = Previamente
+  12     | hemophil | Hemofílico | 1 = Sim; 0 = Não
+  13     | karnof | Escore na Escala de Performance de Karnofsky | 100 = Normal; sem reclamação, sem evidência de doença ; 90 = Atividade Normal possível; poucos sinais/sintomas de doença ; 80 = Atividade Normal com esforço; alguns sinais/sintomas de doença ; 70 = Cuida de si mesmo; Atividade Normal/Trabalho Ativo impossível
+  14     | cd4 | Contagem CD4 de Referência | Células/mililitro
+  15     | priorzdv | Meses de uso prévio de ZDV | Meses
+  16     | age | Idade | Anos"
+df <- read.delim(textConnection(meus.dados),header=FALSE,sep="|",strip.white=TRUE,stringsAsFactors=FALSE) # inclui cabeçalho
+df <- df[-1,] # remove primeira linha
+row.names(df)<-NULL
+pander(df, style = 'rmarkdown')
+```
+
+# Análises Exploratórias (Modelo Riscos Competitivos)
+
+## Tempos e Censuras sem considerar grupos
+```{r an exp rc sem grupos}
+require(survival)
+modelo1 <- survfit(Surv(time, censor) ~ 1, data =actg320)
+plot(modelo1,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
+```
+
+## De acordo com o Tratamento
+```{r an exp rc tx}
+modelo2 <- survfit(Surv(time, censor) ~ tx, data =actg320)
+plot(modelo2,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("Controle","Tratamento"),col=c(1,2))
+
+survdiff(Surv(time, censor) ~ tx, data = actg320, rho = 1)
+```
+
+Diferença entre tratamento e controle __significativa__ a nível de 0.001
+
+## De acordo com o Grupo de Tratamento
+```{r an exp rc tipo de tx}
+modelo3 <- survfit(Surv(time, censor)~txgrp, data = actg320)
+plot(modelo3,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
+legend("right",cex=0.6,lty=c(1,2,3,4),c("ZDV + 3TC", "ZDV + 3TC + IDV", "d4T + 3TC", "d4T + 3TC + IDV"),col=c(1,2,3,4))
+
+
+survdiff(Surv(time, censor) ~ txgrp, data = actg320, rho = 1)
+```
+
+Diferença entre grupos de tratamento __significativa__ a nível de 0.01
+
+## De acordo com o estrato de contagem de células CD4
+```{r an exp rc}
+modelo4 <- survfit(Surv(time, censor)~ strat2, data = actg320)
+plot(modelo4,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD4 > 50"),col=c(1,2))
+
+survdiff(Surv(time, censor) ~ strat2, data = actg320, rho = 1)
+```
+
+Diferença entre estratos de contagem de células CD4 __significativa__ a nível de $10^{-11}$.
+
+## De acordo com o sexo
+```{r an exp rc sexo}
+modelo5 <- survfit(Surv(time, censor) ~ sex, data = actg320)
+plot(modelo5,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("Masculino", "Feminino"),col=c(1,2))
+
+
+survdiff(Surv(time, censor) ~ sex, data = actg320, rho = 1)
+
+```
+
+Diferença entre sexos __não significativa__.
+
+## De acordo com a raça/etnia
+```{r an exp rc raca}
+modelo6 <- survfit(Surv(time, censor)~raceth, data = actg320)
+plot(modelo6,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4,5),col=c(1,2,3,4,5))
+legend("right",cex=0.6,lty=c(1,2,3,4,5),c("Branco Não-Hispânico", "Negro Não-Hispânico", "Hispânico (Independentemente)", "Asiático, Ilhas do Pacífico", "Indo-Americano, Nativo do Alasca"),col=c(1,2,3,4,5))
+
+survdiff(Surv(time, censor) ~ raceth, data = actg320, rho = 1)
+```
+
+Diferença entre raças/etnias __não-significativa__. 
+
+## De acordo com o uso de drogas endovenosas
+```{r}
+modelo7 <- survfit(Surv(time, censor) ~ ivdrug, data = actg320)
+plot(modelo7,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Quanto ao uso de Drogas Endovenosas", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3),col=c(1,2,3))
+legend("right",cex=0.6,lty=c(1,2,3),c("Nunca", "Atualmente", "Previamente"),col=c(1,2,3))
+
+survdiff(Surv(time, censor) ~ ivdrug, data = actg320, rho = 1)
+```
+
+Diferença entre utilização de drogas endovenosas __não-significativa__. Poucos casos (4) na categoria "Atualmente".
+
+## De acordo com a hemofilia
+```{r an exp RC hemofilia}
+modelo8 <- survfit(Surv(time, censor) ~ hemophil, data = actg320)
+plot(modelo8,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("Hemofílico", "Não Hemofílico"),col=c(1,2))
+
+survdiff(Surv(time, censor) ~ hemophil, data = actg320, rho = 1)
+```
+
+Diferença entre hemofílicos e não-hemofílicos __não-significativa__.
+
+## De acordo com o escore na Escala de Performance de Karnofsky
+```{r an exp RC karnofsky}
+modelo9 <- survfit(Surv(time, censor) ~ karnof, data = actg320)
+plot(modelo9,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
+legend("right",cex=0.6,lty=c(1,2,3,4),c("Normal", "Atividade Normal possível", "Atividade Normal com esforço", "Cuida de si mesmo"),col=c(1,2,3,4))
+
+survdiff(Surv(time, censor) ~ karnof, data = actg320, rho = 1)
+```
+
+Diferença entre as curvas de sobrevivência os escores da Escala de Performance de Karnof __significativa__.
+
+## De acordo com a contagem de referência de células CD4
+```{r}
+modelo10 <- survfit(Surv(time, censor) ~ cd4, data = actg320)
+plot(modelo10,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD > 50"),col=c(1,2))
+
+survdiff(Surv(time, censor) ~ cd4, data = actg320, rho = 1)
+```
+
