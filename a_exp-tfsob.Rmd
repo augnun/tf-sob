@@ -55,7 +55,7 @@ row.names(df)<-NULL
 pander(df, style = 'rmarkdown')
 ```
 
-# Análises Exploratórias (Modelo Riscos Competitivos)
+# Análises Exploratórias (Modelo Múltiplos Eventos)
 
 ## Tempos e Censuras sem considerar grupos
 ```{r an exp rc sem grupos}
@@ -174,3 +174,149 @@ legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD > 50"),col=c(1,2))
 survdiff(Surv(time, censor) ~ cd4, data = actg320, rho = 1)
 ```
 
+
+# Análises Exploratórias (Modelo Simples)
+```{r an exp   sem grupos}
+require(survival)
+modelo1 <- survfit(Surv(time_d, censor_d) ~ 1, data =actg320)
+plot(modelo1,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
+
+curvaTTT <- function(tempo) {
+  G_rn <- numeric()
+  for (i in 1:length(tempo)) {
+    G_rn[i] <-
+      (sum(sort(tempo)[1:i]) + (length(tempo) - i) * sort(tempo)[i]) / (sum(tempo))
+  }
+  rn <- seq_along(tempo)/length(tempo)
+  plot(G_rn ~ rn,
+       main = "Curva TTT \n(Tempo Total em Teste)",
+       ylab = "G(r/n)",
+       xlab = "r/n")
+  abline(0,1)
+}
+
+curvaTTT(actg320$time_d)
+```
+
+## De acordo com o Tratamento
+```{r an exp   tx}
+modelo2 <- survfit(Surv(time_d, censor_d) ~ tx, data =actg320)
+plot(modelo2,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("Controle","Tratamento"),col=c(1,2))
+
+survdiff(Surv(time_d, censor_d) ~ tx, data = actg320, rho = 1)
+```
+
+Diferença entre tratamento e controle __significativa__ 
+
+## De acordo com o Grupo de Tratamento
+```{r an exp   tipo de tx}
+modelo3 <- survfit(Surv(time_d, censor_d)~txgrp, data = actg320)
+plot(modelo3,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
+legend("right",cex=0.6,lty=c(1,2,3,4),c("ZDV + 3TC", "ZDV + 3TC + IDV", "d4T + 3TC", "d4T + 3TC + IDV"),col=c(1,2,3,4))
+
+
+survdiff(Surv(time_d, censor_d) ~ txgrp, data = actg320, rho = 1)
+```
+
+Diferença entre grupos de tratamento __não-significativa__ a nível de 0.01
+
+## De acordo com o estrato de contagem de células CD4
+```{r an exp  }
+modelo4 <- survfit(Surv(time_d, censor_d)~ strat2, data = actg320)
+plot(modelo4,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD4 > 50"),col=c(1,2))
+
+survdiff(Surv(time_d, censor_d) ~ strat2, data = actg320, rho = 1)
+```
+
+Diferença entre estratos de contagem de células CD4 __significativa__ a nível de $10^{-11}$.
+
+## De acordo com o sexo
+```{r an exp   sexo}
+modelo5 <- survfit(Surv(time_d, censor_d) ~ sex, data = actg320)
+plot(modelo5,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("Masculino", "Feminino"),col=c(1,2))
+
+
+survdiff(Surv(time_d, censor_d) ~ sex, data = actg320, rho = 1)
+
+```
+
+Diferença entre sexos __não significativa__.
+
+## De acordo com a raça/etnia
+```{r an exp   raca}
+modelo6 <- survfit(Surv(time_d, censor_d)~raceth, data = actg320)
+plot(modelo6,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4,5),col=c(1,2,3,4,5))
+legend("right",cex=0.6,lty=c(1,2,3,4,5),c("Branco Não-Hispânico", "Negro Não-Hispânico", "Hispânico (Independentemente)", "Asiático, Ilhas do Pacífico", "Indo-Americano, Nativo do Alasca"),col=c(1,2,3,4,5))
+
+survdiff(Surv(time_d, censor_d) ~ raceth, data = actg320, rho = 1)
+```
+
+Diferença entre raças/etnias __significativa__. 
+
+## De acordo com o uso de drogas endovenosas
+```{r}
+modelo7 <- survfit(Surv(time_d, censor_d) ~ ivdrug, data = actg320)
+plot(modelo7,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Quanto ao uso de Drogas Endovenosas", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3),col=c(1,2,3))
+legend("right",cex=0.6,lty=c(1,2,3),c("Nunca", "Atualmente", "Previamente"),col=c(1,2,3))
+
+survdiff(Surv(time_d, censor_d) ~ ivdrug, data = actg320, rho = 1)
+```
+
+Diferença entre utilização de drogas endovenosas __significativa__. Poucos casos (4) na categoria "Atualmente".
+
+## De acordo com a hemofilia
+```{r an exp   hemofilia}
+modelo8 <- survfit(Surv(time_d, censor_d) ~ hemophil, data = actg320)
+plot(modelo8,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("Hemofílico", "Não Hemofílico"),col=c(1,2))
+
+survdiff(Surv(time_d, censor_d) ~ hemophil, data = actg320, rho = 1)
+```
+
+Diferença entre hemofílicos e não-hemofílicos __não-significativa__.
+
+## De acordo com o escore na Escala de Performance de Karnofsky
+```{r an exp   karnofsky}
+modelo9 <- survfit(Surv(time_d, censor_d) ~ karnof, data = actg320)
+plot(modelo9,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
+legend("right",cex=0.6,lty=c(1,2,3,4),c("Normal", "Atividade Normal possível", "Atividade Normal com esforço", "Cuida de si mesmo"),col=c(1,2,3,4))
+
+survdiff(Surv(time_d, censor_d) ~ karnof, data = actg320, rho = 1)
+```
+
+Diferença entre as curvas de sobrevivência os escores da Escala de Performance de Karnof __significativa__.
+
+## De acordo com a contagem de referência de células CD4
+```{r}
+modelo10 <- survfit(Surv(time_d, censor_d) ~ cd4, data = actg320)
+plot(modelo10,
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD > 50"),col=c(1,2))
+
+survdiff(Surv(time_d, censor_d) ~ cd4, data = actg320, rho = 1)
+```
+
+#Achados exploratórios
+
+## Curva TTT
+
+Sugere a utilização de uma distribuição cuja curva de risco tenha formato crescente.
+
+## Variáveis significativas a um nível de 0.05
+
+1. Escore de Karnof ($\approx 10^{-7}$)
+2. Estrato de contagem de células CD4 ($\approx 10^{-3}$)
+3. Raça/Etnia
+4. Tratamento
