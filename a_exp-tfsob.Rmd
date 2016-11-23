@@ -60,6 +60,7 @@ pander(df, style = 'rmarkdown')
 ## Tempos e Censuras sem considerar grupos
 ```{r an exp rc sem grupos}
 require(survival)
+require(AdequacyModel)
 modelo1 <- survfit(Surv(time, censor) ~ 1, data =actg320)
 plot(modelo1,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
@@ -178,7 +179,7 @@ survdiff(Surv(time, censor) ~ cd4, data = actg320, rho = 1)
 # Análises Exploratórias (Modelo Simples)
 ```{r an exp   sem grupos}
 require(survival)
-modelo1 <- survfit(Surv(time_d, censor_d) ~ 1, data =actg320)
+modelo1 <- survfit(Surv(time_d, censor_d) ~ 1, data = actg320)
 plot(modelo1,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
 
@@ -201,18 +202,26 @@ curvaTTT(actg320$time_d)
 
 ## De acordo com o Tratamento
 ```{r an exp   tx}
-modelo2 <- survfit(Surv(time_d, censor_d) ~ tx, data =actg320)
+modelo2 <- survfit(Surv(time_d, censor_d) ~ factor(tx), data =actg320)
 plot(modelo2,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
 legend("right",cex=0.6,lty=c(1,2),c("Controle","Tratamento"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ tx, data = actg320, rho = 1)
+
+df.tx <- data.frame(actg320$time_d, actg320$tx)
+
+tx0 <- df.tx[df.tx$actg320.tx == 0,]
+TTT(tx0$actg320.time_d)
+
+tx1 <- df.tx[df.tx$actg320.tx == 1,]
+TTT(tx1$actg320.time_d)
 ```
 
 Diferença entre tratamento e controle __significativa__ 
 
 ## De acordo com o Grupo de Tratamento
-```{r an exp   tipo de tx}
+```{r an exp tipo de tx}
 modelo3 <- survfit(Surv(time_d, censor_d)~txgrp, data = actg320)
 plot(modelo3,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
@@ -220,18 +229,42 @@ legend("right",cex=0.6,lty=c(1,2,3,4),c("ZDV + 3TC", "ZDV + 3TC + IDV", "d4T + 3
 
 
 survdiff(Surv(time_d, censor_d) ~ txgrp, data = actg320, rho = 1)
+
+df.txgrp <- data.frame(actg320$time_d, actg320$txgrp)
+
+df.txgrp1 <- df.txgrp[df.txgrp$actg320.txgrp == 1,]
+TTT(df.txgrp1$actg320.time_d)
+
+df.txgrp2 <- df.txgrp[df.txgrp$actg320.txgrp == 2,]
+TTT(df.txgrp2$actg320.time_d)
+
+# df.txgrp3 <- df.txgrp[df.txgrp$actg320.txgrp == 3,]
+# TTT(df.txgrp3$actg320.time_d)
+# erro pois n = 1
+
+df.txgrp4 <- df.txgrp[df.txgrp$actg320.txgrp == 4,]
+TTT(df.txgrp4$actg320.time_d)
+# Não informativo pois n = 2
 ```
 
-Diferença entre grupos de tratamento __não-significativa__ a nível de 0.01
+Diferença entre grupos de tratamento __significativa__ a nível de 0.25
 
 ## De acordo com o estrato de contagem de células CD4
-```{r an exp  }
+```{r an exp strat2}
 modelo4 <- survfit(Surv(time_d, censor_d)~ strat2, data = actg320)
 plot(modelo4,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
 legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD4 > 50"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ strat2, data = actg320, rho = 1)
+
+df.strat2 <- data.frame(actg320$time_d, actg320$strat2)
+
+df.strat2.0 <- df.strat2[df.strat2$actg320.strat2 == 0,]
+TTT(df.strat2.0$actg320.time_d)
+
+df.strat2.1 <- df.strat2[df.strat2$actg320.strat2 == 1,]
+TTT(df.strat2.1$actg320.time_d)
 ```
 
 Diferença entre estratos de contagem de células CD4 __significativa__ a nível de $10^{-11}$.
@@ -246,6 +279,13 @@ legend("right",cex=0.6,lty=c(1,2),c("Masculino", "Feminino"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ sex, data = actg320, rho = 1)
 
+df.sex <- data.frame(actg320$time_d, actg320$sex)
+
+df.sex1 <- df.sex[df.sex$actg320.sex == 1,]
+TTT(df.sex1$actg320.time_d)
+
+df.sex2 <- df.sex[df.sex$actg320.sex == 2,]
+TTT(df.sex2$actg320.time_d)
 ```
 
 Diferença entre sexos __não significativa__.
@@ -258,6 +298,26 @@ plot(modelo6,
 legend("right",cex=0.6,lty=c(1,2,3,4,5),c("Branco Não-Hispânico", "Negro Não-Hispânico", "Hispânico (Independentemente)", "Asiático, Ilhas do Pacífico", "Indo-Americano, Nativo do Alasca"),col=c(1,2,3,4,5))
 
 survdiff(Surv(time_d, censor_d) ~ raceth, data = actg320, rho = 1)
+
+df.raceth <- data.frame(actg320$time_d, actg320$raceth)
+
+df.raceth1 <- df.raceth[df.raceth$actg320.raceth == 1,]
+TTT(df.raceth1$actg320.time_d)
+
+df.raceth2 <- df.raceth[df.raceth$actg320.raceth == 2,]
+TTT(df.raceth2$actg320.time_d)
+
+df.raceth3 <- df.raceth[df.raceth$actg320.raceth == 3,]
+TTT(df.raceth3$actg320.time_d)
+
+df.raceth4 <- df.raceth[df.raceth$actg320.raceth == 4,]
+TTT(df.raceth4$actg320.time_d)
+# poucas obs. (14)
+
+df.raceth5 <- df.raceth[df.raceth$actg320.raceth == 5,]
+TTT(df.raceth5$actg320.time_d)
+# poucas obs. (11)
+
 ```
 
 Diferença entre raças/etnias __significativa__. 
@@ -270,6 +330,18 @@ plot(modelo7,
 legend("right",cex=0.6,lty=c(1,2,3),c("Nunca", "Atualmente", "Previamente"),col=c(1,2,3))
 
 survdiff(Surv(time_d, censor_d) ~ ivdrug, data = actg320, rho = 1)
+
+df.ivdrug <- data.frame(actg320$time_d, actg320$ivdrug)
+
+df.ivdrug1 <- df.ivdrug[df.ivdrug$actg320.ivdrug == 1,]
+TTT(df.ivdrug1$actg320.time_d)
+
+df.ivdrug2 <- df.ivdrug[df.ivdrug$actg320.ivdrug == 2,]
+TTT(df.ivdrug2$actg320.time_d)
+# nobs = 4
+
+df.ivdrug3 <- df.ivdrug[df.ivdrug$actg320.ivdrug == 3,]
+TTT(df.ivdrug3$actg320.time_d)
 ```
 
 Diferença entre utilização de drogas endovenosas __significativa__. Poucos casos (4) na categoria "Atualmente".
@@ -282,30 +354,49 @@ plot(modelo8,
 legend("right",cex=0.6,lty=c(1,2),c("Hemofílico", "Não Hemofílico"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ hemophil, data = actg320, rho = 1)
+
+df.hemophil <- data.frame(actg320$time_d, actg320$hemophil)
+
+df.hemophil0 <- df.hemophil[df.hemophil$actg320.hemophil == 0,]
+TTT(df.hemophil0$actg320.time_d)
+
+df.hemophil1 <- df.hemophil[df.hemophil$actg320.hemophil == 1,]
+TTT(df.hemophil1$actg320.time_d)
+#nobs = 35
 ```
 
 Diferença entre hemofílicos e não-hemofílicos __não-significativa__.
 
 ## De acordo com o escore na Escala de Performance de Karnofsky
-```{r an exp   karnofsky}
-modelo9 <- survfit(Surv(time_d, censor_d) ~ karnof, data = actg320)
+```{r an exp karnofsky}
+modelo9 <- survfit(Surv(time_d, censor_d) ~ factor(karnof), data = actg320)
 plot(modelo9,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
 legend("right",cex=0.6,lty=c(1,2,3,4),c("Normal", "Atividade Normal possível", "Atividade Normal com esforço", "Cuida de si mesmo"),col=c(1,2,3,4))
 
-survdiff(Surv(time_d, censor_d) ~ karnof, data = actg320, rho = 1)
+survdiff(Surv(time_d, censor_d) ~ factor(karnof), data = actg320, rho = 1)
+
+df.karnof <- data.frame(actg320$time_d, actg320$karnof)
+
+df.karnof70 <- df.karnof[df.karnof$actg320.karnof == 70,]
+TTT(df.karnof70$actg320.time_d)
+#nobs = 32
+
+df.karnof80 <- df.karnof[df.karnof$actg320.karnof == 80,]
+TTT(df.karnof80$actg320.time_d)
+
+df.karnof90 <- df.karnof[df.karnof$actg320.karnof == 90,]
+TTT(df.karnof90$actg320.time_d)
+
+df.karnof100 <- df.karnof[df.karnof$actg320.karnof == 100,]
+TTT(df.karnof100$actg320.time_d)
 ```
 
 Diferença entre as curvas de sobrevivência os escores da Escala de Performance de Karnof __significativa__.
 
 ## De acordo com a contagem de referência de células CD4
-```{r}
+```{r an exp cd4}
 modelo10 <- survfit(Surv(time_d, censor_d) ~ cd4, data = actg320)
-plot(modelo10,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
-legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD > 50"),col=c(1,2))
-
-survdiff(Surv(time_d, censor_d) ~ cd4, data = actg320, rho = 1)
 ```
 
 #Achados exploratórios
@@ -314,9 +405,109 @@ survdiff(Surv(time_d, censor_d) ~ cd4, data = actg320, rho = 1)
 
 Sugere a utilização de uma distribuição cuja curva de risco tenha formato crescente.
 
-## Variáveis significativas a um nível de 0.05
+## Variáveis significativas a um nível de 0.25
 
 1. Escore de Karnof ($\approx 10^{-7}$)
 2. Estrato de contagem de células CD4 ($\approx 10^{-3}$)
 3. Raça/Etnia
 4. Tratamento
+5. Grupo de Tratamento
+
+# "Conclusão" Análise Exploratória
+
+Utilizar Modelo Weibull com $\gamma > 1$?
+
+# Modelagem Paramétrica (Weibull)
+```{r}
+mwe <- survreg(Surv(actg320$time_d, actg320$censor_d) ~ 1, dist = "weibull")
+summary(mwe)
+
+alphaw <- exp(mwe$coefficients[1])
+gammaw <- 1/mwe$scale
+
+pws <- 2
+AICws <- (-2*mwe$loglik[1])+2*pws
+
+AICcws <- AICws + ((2*pws*(pws+1))/(length(actg320$time_d)-pws-1))
+
+BICws<-(-2*mwe$loglik[1]) + pws*log(length(actg320$time_d))
+
+medidasw<-cbind(AICws,AICcws,BICws)
+medidasw
+```
+
+# Modelagem paramétrica (logNormal)
+```{r}
+mlognorm<-survreg(Surv(actg320$time_d,actg320$censor_d)~1, dist='lognorm')
+mlognorm
+
+mi<-mlognorm$coefficients[1]
+sigma<-mlognorm$scale
+
+plns<-2
+AIClns<-(-2*mlognorm$loglik[1])+(2*plns)
+
+AICclns<-AIClns + ((2*pws*(pws+1))/(length(actg320$time_d)-plns-1))
+
+BIClns<-(-2*mlognorm$loglik[1]) + plns*log(length(actg320$time_d))
+
+medidasln<-cbind(AIClns,AICclns,BIClns)
+medidasln
+
+```
+
+# Modelagem Paramétrica (log-Logística)
+```{r}
+mloglogi<-survreg(Surv(actg320$time_d,actg320$censor_d)~1, dist='loglogistic')
+mloglogi
+
+alphall<-exp(mloglogi$coefficients[1])
+alphall
+
+gamall<- 1/mloglogi$scale
+gamall
+
+plls<-2
+AIClls<-(-2*mloglogi$loglik[1])+(2*plls)
+
+AICclls<-AIClls + ((2*pws*(pws+1))/(length(actg320$time_d)-plls-1))
+
+BIClls<-(-2*mloglogi$loglik[1]) + plls*log(length(actg320$time_d))
+
+medidasll<-cbind(AIClls,AICclls,BIClls)
+medidasll
+```
+
+# Medidas de informação modelos paramétricos
+```{r medidas de info}
+rbind(medidasw, medidasln, medidasll)
+```
+
+# Gráfico Kaplan-Meier versus Modelos Paramétricos
+```{r km versus modelos}
+km<-survfit(Surv(actg320$time_d, actg320$censor_d)~1)
+time<-km$time         ### tempo de KM ###
+#time
+
+skm<-km$surv     ###  sobrevivência de Kaplan-Meier ###
+#skm
+
+swe<-exp(-(time/alphaw)^gammaw)  ###  sobrevivencia do modelo weibull ###
+
+slognorm<-pnorm((-log(time)+mi)/sigma)   ###  sobrevivencia do modelo log-normal ###
+
+sloglogi<-1/(1+(time/alphall)^gamall)  ###  sobrevivencia do modelo log-log?stico ###
+
+#par(mfrow=c(1,1))
+plot(km,conf.int=F, xlab="Tempos", ylab="S(t)")
+lines(c(0,time),c(1,swe),lty=2,col=2)
+legend(18,0.4,lty=c(1,2),col=c(1,2),c("Kaplan-Meier","Weibull"),bty="n",cex=0.8)
+lines(c(0,time),c(1,slognorm),lty=4,col=4)
+legend(18,0.3,lty=4,col=4,c("Log-Normal"),bty="n",cex=0.8)
+lines(c(0,time),c(1,sloglogi),lty=5,col=6)
+legend(18,0.2,lty=5,col=6,c("Log-Logística"),bty="n",cex=0.8)
+```
+
+
+# Modelo de Regressão
+
