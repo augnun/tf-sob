@@ -4,8 +4,6 @@ author:
 - Augusto Cesar Ribeiro Nunes - 13/0103004
 - Isabela Paranhos Pinto - 11/0013450
 output:
-  pdf_document: default
-  html_notebook: default
   html_document: default
 ---
 ```{r dados, echo=FALSE, message=FALSE, warnings=FALSE}
@@ -64,6 +62,7 @@ require(AdequacyModel)
 modelo1 <- survfit(Surv(time, censor) ~ 1, data =actg320)
 plot(modelo1,
      main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
+TTT(actg320$time_d)
 ```
 
 ## De acordo com o Tratamento
@@ -165,23 +164,35 @@ survdiff(Surv(time, censor) ~ karnof, data = actg320, rho = 1)
 
 Diferença entre as curvas de sobrevivência os escores da Escala de Performance de Karnof __significativa__.
 
-## De acordo com a contagem de referência de células CD4
-```{r}
-modelo10 <- survfit(Surv(time, censor) ~ cd4, data = actg320)
-plot(modelo10,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
-legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD > 50"),col=c(1,2))
 
-survdiff(Surv(time, censor) ~ cd4, data = actg320, rho = 1)
+# Análises Exploratórias (Modelo Simples)
+```{r medidas e graficos}
+# Quantis
+quantile(actg320$time_d)
+quantile(actg320$time_d[which(actg320$censor_d==0)])
+quantile(actg320$time_d[which(actg320$censor_d==1)])
+
+# Médias
+mean(actg320$time_d)
+mean(actg320$time_d[which(actg320$censor_d==0)])
+mean(actg320$time_d[which(actg320$censor_d==1)])
+
+# Gráfico Kernel
+plot(density(actg320$time_d), main = "Densidade Kernel para a variável tempo")
+lines(density(actg320$time_d[which(actg320$censor_d==1)]), lty=2, col = 2)
+lines(density(actg320$time_d[which(actg320$censor_d==0)]), lty=3, col = 3)
+legend("left", lty=c(1,2,3), col = c(1,2,3), c("Geral", "Falha", "Censurados"))
+
 ```
 
 
-# Análises Exploratórias (Modelo Simples)
+
 ```{r an exp   sem grupos}
 require(survival)
 modelo1 <- survfit(Surv(time_d, censor_d) ~ 1, data = actg320)
 plot(modelo1,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
+     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)),
+     mark.time = T, conf.int= F)
 
 curvaTTT <- function(tempo) {
   G_rn <- numeric()
