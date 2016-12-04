@@ -554,5 +554,10 @@ print(cox.zph(modelo5)) # Não rejeita a suposição de proporcionalidade
 ```{r}
 modelo6 <- coxph(Surv(time_d, censor_d) ~ factor(karnof) + factor(txgrp) + factor(tx) + age + cd4)
 summary(modelo6)
+
+modelo7 <- coxph(Surv(time_d, censor_d) ~ factor(karnof) + factor(txgrp) + factor(tx) + age)
+summary(modelo7)
+
+anova(modelo6, modelo7)
 ```
 
