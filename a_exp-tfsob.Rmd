@@ -522,3 +522,37 @@ legend(18,0.2,lty=5,col=6,c("Log-Logística"),bty="n",cex=0.8)
 
 # Modelo de Regressão
 
+```{r}
+attach(actg320)
+# única covar
+modelo1 <- coxph(Surv(time_d, censor_d)~factor(karnof), method = "breslow")
+summary(modelo1)
+plot(cox.zph(modelo1))
+print(cox.zph(modelo1)) # Não há violação da suposição de riscos proporcionais
+modelo1$loglik
+
+
+modelo2 <- coxph(Surv(time_d, censor_d) ~ factor(strat2), method = "breslow")
+summary(modelo2)
+plot(cox.zph(modelo2))
+print(cox.zph(modelo2)) #rejeita a suposição de proporcionalidade no limiar?
+
+modelo3 <- coxph(Surv(time_d, censor_d) ~ factor(raceth))
+summary(modelo3)
+
+
+modelo4 <- coxph(Surv(time_d, censor_d)~ factor(tx))
+summary(modelo4)
+plot(cox.zph(modelo4))
+print(cox.zph(modelo4)) # Não rejeita a suposição de proporcionalidade
+
+modelo5 <- coxph(Surv(time_d, censor_d) ~ factor(txgrp))
+summary(modelo5)
+plot(cox.zph(modelo5))
+print(cox.zph(modelo5)) # Não rejeita a suposição de proporcionalidade
+```
+```{r}
+modelo6 <- coxph(Surv(time_d, censor_d) ~ factor(karnof) + factor(txgrp) + factor(tx) + age + cd4)
+summary(modelo6)
+```
+
