@@ -491,12 +491,6 @@ for(i in 1:length(actg320$karnof)){
 
 karnof_90 = factor(karnof_90)
 
-
-modelo7.int <- coxph(Surv(time_d, censor_d) ~ factor(karnof_70))
-summary(modelo7.int)
-plot(cox.zph(modelo7.int), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Escore 70", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
-cox.zph(modelo7.int)
-
 modelo7.int2 <- coxph(Surv(time_d, censor_d)~factor(karnof_90))
 summary(modelo7.int2)
 plot(cox.zph(modelo7.int2), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Escore 90", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
@@ -523,11 +517,66 @@ anova(modelo6, modelo7)
 ```
 
 
-```{r organizando}
-modelo1 <- coxph(Surv(time_d, censor_d)~1)
-summary(modelo1)
+```{r modelo nulo}
+# Nulo
+fit0 <- coxph(Surv(time_d, censor_d)~1)
+summary(fit0)
+```
 
-modelo2 <- coxph(Surv(time_d, censor_d)~tx)
-summary(modelo2)
+
+```{r modelo tratamento}
+fit1 <- coxph(Surv(time_d, censor_d) ~ tx)
+summary(fit1)
+
+fb1<-basehaz(fit1, centered = FALSE)
+temp1<-fb1$time
+h01<-fb1$hazard
+S01<-exp(-h01)
+
+beta1<-fit1$coef[1]
+
+Sg11<-S01    #tx=0
+Sg21<-S01^exp(beta1) #tx=1
+
+plot(temp1,Sg11, ylim=c(0,1), type="s",lty=1)
+lines(temp1,Sg21,type="s",lty=2, col = 2)
+legend(2,0.3,lty=c(1,2),col = c(1,2), c("Controle","Tratamento"))
+
+Hg11<-  -log(Sg11)
+Hg21<-  -log(Sg21)
+plot(temp1,Hg11, ylim=c(0,1), type="s",lty=1,xlab="Tempo", ylab="H(t|x)estimada", main = "Risco Acumulado \n Covariável Tratamento")
+lines(temp1,Hg21,type="s",lty=2, col = 2)
+legend(1,0.8,lty=c(1,2), col = c(1,2),c("Controle","Tratamento"))
+
+```
+```{r modelo droga ev}
+ivdrug <- relevel(ivdrug, "0")
+fit2<-coxph(Surv(time_d,censor_d)~factor(ivdrug))
+summary(fit2)
+```
+
+```{r escore karnofsky}
+fit3 <- coxph(Surv(time_d, censor_d)~factor(karnof))
+summary(fit3)
+```
+
+
+```{r modelo karnof_70_80}
+fit4 <- coxph(Surv(time_d, censor_d)~factor(karnof_70_80))
+summary(fit4)
+```
+
+```{r modelo com todas as covar quanti}
+fit7 <- coxph(Surv(time_d, censor_d) ~ tx + factor(karnof_70_80) + factor(karnof_90) + age + cd4 + priorzdv + factor(raceth) + factor(ivdrug))
+# summary(fit6)
+
+fit6 <-  coxph(Surv(time_d, censor_d) ~ tx + factor(karnof_70_80) + factor(karnof_90) + age  + cd4 + priorzdv + factor(ivdrug))
+
+anova(fit6,fit7)
+
+fit8 <- coxph(Surv(time_d, censor_d) ~ tx + factor(karnof_70_80) + factor(karnof_90) + age  + priorzdv + factor(ivdrug))
+
+
+fit9 <- coxph(Surv(time_d, censor_d)~tx + ivdrug + factor(karnof_70_80) + factor(karnof_90) +age)
 ```
 
