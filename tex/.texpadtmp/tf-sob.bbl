@@ -1,0 +1,38 @@
+\providecommand{\abntreprintinfo}[1]{%
+ \citeonline{#1}}
+\setlength{\labelsep}{0pt}\begin{thebibliography}{}
+\providecommand{\abntrefinfo}[3]{}
+\providecommand{\abntbstabout}[1]{}
+\abntbstabout{v-1.9.6 }
+
+\bibitem[El-Sadr, Mayer e Hodder 2010]{el2010aids}
+\abntrefinfo{El-Sadr, Mayer e Hodder}{EL-SADR; MAYER; HODDER}{2010}
+{EL-SADR, W.~M.; MAYER, K.~H.; HODDER, S.~L. Aids in america—forgotten but
+  not gone.
+\emph{The New England journal of medicine}, NIH Public Access, v.~362, n.~11,
+  p.~967, 2010.}
+
+\bibitem[Fauci et al. 2003]{fauci2003hiv}
+\abntrefinfo{Fauci et al.}{FAUCI et al.}{2003}
+{FAUCI, A.~S. et al. Hiv and aids: 20 years of science.
+\emph{Nature medicine}, v.~9, n.~7, p. 839--843, 2003.}
+
+\bibitem[Hall et al. 2008]{hall2008estimation}
+\abntrefinfo{Hall et al.}{HALL et al.}{2008}
+{HALL, H.~I. et al. Estimation of hiv incidence in the united states.
+\emph{Jama}, American Medical Association, v.~300, n.~5, p. 520--529, 2008.}
+
+\bibitem[Hammer et al. 1997]{hammer1997controlled}
+\abntrefinfo{Hammer et al.}{HAMMER et al.}{1997}
+{HAMMER, S.~M. et al. A controlled trial of two nucleoside analogues plus
+  indinavir in persons with human immunodeficiency virus infection and cd4 cell
+  counts of 200 per cubic millimeter or less.
+\emph{New England Journal of Medicine}, Mass Medical Soc, v.~337, n.~11, p.
+  725--733, 1997.}
+
+\bibitem[Kalbfleisch e Prentice 2011]{kalbfleisch2011statistical}
+\abntrefinfo{Kalbfleisch e Prentice}{KALBFLEISCH; PRENTICE}{2011}
+{KALBFLEISCH, J.~D.; PRENTICE, R.~L. \emph{The statistical analysis of failure
+  time data}. [S.l.]: John Wiley \& Sons, 2011. v.~360.}
+
+\end{thebibliography}

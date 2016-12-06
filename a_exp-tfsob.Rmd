@@ -53,120 +53,10 @@ row.names(df)<-NULL
 pander(df, style = 'rmarkdown')
 ```
 
-# Análises Exploratórias (Modelo Múltiplos Eventos)
-
-## Tempos e Censuras sem considerar grupos
-```{r an exp rc sem grupos}
-require(survival)
-require(AdequacyModel)
-modelo1 <- survfit(Surv(time, censor) ~ 1, data =actg320)
-plot(modelo1,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Sem considerar Grupos ", xlab = "Tempo", ylab = expression(hat(S)(t)))
-TTT(actg320$time_d)
-```
-
-## De acordo com o Tratamento
-```{r an exp rc tx}
-modelo2 <- survfit(Surv(time, censor) ~ tx, data =actg320)
-plot(modelo2,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
-legend("right",cex=0.6,lty=c(1,2),c("Controle","Tratamento"),col=c(1,2))
-
-survdiff(Surv(time, censor) ~ tx, data = actg320, rho = 1)
-```
-
-Diferença entre tratamento e controle __significativa__ a nível de 0.001
-
-## De acordo com o Grupo de Tratamento
-```{r an exp rc tipo de tx}
-modelo3 <- survfit(Surv(time, censor)~txgrp, data = actg320)
-plot(modelo3,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
-legend("right",cex=0.6,lty=c(1,2,3,4),c("ZDV + 3TC", "ZDV + 3TC + IDV", "d4T + 3TC", "d4T + 3TC + IDV"),col=c(1,2,3,4))
-
-
-survdiff(Surv(time, censor) ~ txgrp, data = actg320, rho = 1)
-```
-
-Diferença entre grupos de tratamento __significativa__ a nível de 0.01
-
-## De acordo com o estrato de contagem de células CD4
-```{r an exp rc}
-modelo4 <- survfit(Surv(time, censor)~ strat2, data = actg320)
-plot(modelo4,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
-legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD4 > 50"),col=c(1,2))
-
-survdiff(Surv(time, censor) ~ strat2, data = actg320, rho = 1)
-```
-
-Diferença entre estratos de contagem de células CD4 __significativa__ a nível de $10^{-11}$.
-
-## De acordo com o sexo
-```{r an exp rc sexo}
-modelo5 <- survfit(Surv(time, censor) ~ sex, data = actg320)
-plot(modelo5,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
-legend("right",cex=0.6,lty=c(1,2),c("Masculino", "Feminino"),col=c(1,2))
-
-
-survdiff(Surv(time, censor) ~ sex, data = actg320, rho = 1)
-
-```
-
-Diferença entre sexos __não significativa__.
-
-## De acordo com a raça/etnia
-```{r an exp rc raca}
-modelo6 <- survfit(Surv(time, censor)~raceth, data = actg320)
-plot(modelo6,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4,5),col=c(1,2,3,4,5))
-legend("right",cex=0.6,lty=c(1,2,3,4,5),c("Branco Não-Hispânico", "Negro Não-Hispânico", "Hispânico (Independentemente)", "Asiático, Ilhas do Pacífico", "Indo-Americano, Nativo do Alasca"),col=c(1,2,3,4,5))
-
-survdiff(Surv(time, censor) ~ raceth, data = actg320, rho = 1)
-```
-
-Diferença entre raças/etnias __não-significativa__. 
-
-## De acordo com o uso de drogas endovenosas
-```{r}
-modelo7 <- survfit(Surv(time, censor) ~ ivdrug, data = actg320)
-plot(modelo7,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Quanto ao uso de Drogas Endovenosas", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3),col=c(1,2,3))
-legend("right",cex=0.6,lty=c(1,2,3),c("Nunca", "Atualmente", "Previamente"),col=c(1,2,3))
-
-survdiff(Surv(time, censor) ~ ivdrug, data = actg320, rho = 1)
-```
-
-Diferença entre utilização de drogas endovenosas __não-significativa__. Poucos casos (4) na categoria "Atualmente".
-
-## De acordo com a hemofilia
-```{r an exp RC hemofilia}
-modelo8 <- survfit(Surv(time, censor) ~ hemophil, data = actg320)
-plot(modelo8,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
-legend("right",cex=0.6,lty=c(1,2),c("Hemofílico", "Não Hemofílico"),col=c(1,2))
-
-survdiff(Surv(time, censor) ~ hemophil, data = actg320, rho = 1)
-```
-
-Diferença entre hemofílicos e não-hemofílicos __não-significativa__.
-
-## De acordo com o escore na Escala de Performance de Karnofsky
-```{r an exp RC karnofsky}
-modelo9 <- survfit(Surv(time, censor) ~ karnof, data = actg320)
-plot(modelo9,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
-legend("right",cex=0.6,lty=c(1,2,3,4),c("Normal", "Atividade Normal possível", "Atividade Normal com esforço", "Cuida de si mesmo"),col=c(1,2,3,4))
-
-survdiff(Surv(time, censor) ~ karnof, data = actg320, rho = 1)
-```
-
-Diferença entre as curvas de sobrevivência os escores da Escala de Performance de Karnof __significativa__.
-
-
 # Análises Exploratórias (Modelo Simples)
 ```{r medidas e graficos}
+
+attach(actg320)
 # Quantis
 quantile(actg320$time_d)
 quantile(actg320$time_d[which(actg320$censor_d==0)])
@@ -182,6 +72,10 @@ plot(density(actg320$time_d), main = "Densidade Kernel para a variável tempo")
 lines(density(actg320$time_d[which(actg320$censor_d==1)]), lty=2, col = 2)
 lines(density(actg320$time_d[which(actg320$censor_d==0)]), lty=3, col = 3)
 legend("left", lty=c(1,2,3), col = c(1,2,3), c("Geral", "Falha", "Censurados"))
+
+# Recodificando ivdrug
+
+
 
 ```
 
@@ -215,7 +109,7 @@ curvaTTT(actg320$time_d)
 ```{r an exp   tx}
 modelo2 <- survfit(Surv(time_d, censor_d) ~ factor(tx), data =actg320)
 plot(modelo2,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: Tratamento", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
 legend("right",cex=0.6,lty=c(1,2),c("Controle","Tratamento"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ tx, data = actg320, rho = 1)
@@ -235,7 +129,7 @@ Diferença entre tratamento e controle __significativa__
 ```{r an exp tipo de tx}
 modelo3 <- survfit(Surv(time_d, censor_d)~txgrp, data = actg320)
 plot(modelo3,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: Grupo de Tratamento", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
 legend("right",cex=0.6,lty=c(1,2,3,4),c("ZDV + 3TC", "ZDV + 3TC + IDV", "d4T + 3TC", "d4T + 3TC + IDV"),col=c(1,2,3,4))
 
 
@@ -264,7 +158,7 @@ Diferença entre grupos de tratamento __significativa__ a nível de 0.25
 ```{r an exp strat2}
 modelo4 <- survfit(Surv(time_d, censor_d)~ strat2, data = actg320)
 plot(modelo4,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: Estrato #cd4", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
 legend("right",cex=0.6,lty=c(1,2),c("CD4 <= 50", "CD4 > 50"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ strat2, data = actg320, rho = 1)
@@ -284,7 +178,7 @@ Diferença entre estratos de contagem de células CD4 __significativa__ a nível
 ```{r an exp   sexo}
 modelo5 <- survfit(Surv(time_d, censor_d) ~ sex, data = actg320)
 plot(modelo5,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: Sexo", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
 legend("right",cex=0.6,lty=c(1,2),c("Masculino", "Feminino"),col=c(1,2))
 
 
@@ -302,10 +196,10 @@ TTT(df.sex2$actg320.time_d)
 Diferença entre sexos __não significativa__.
 
 ## De acordo com a raça/etnia
-```{r an exp   raca}
+```{r an exp  raca}
 modelo6 <- survfit(Surv(time_d, censor_d)~raceth, data = actg320)
 plot(modelo6,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4,5),col=c(1,2,3,4,5))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: raça/etnia", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4,5),col=c(1,2,3,4,5))
 legend("right",cex=0.6,lty=c(1,2,3,4,5),c("Branco Não-Hispânico", "Negro Não-Hispânico", "Hispânico (Independentemente)", "Asiático, Ilhas do Pacífico", "Indo-Americano, Nativo do Alasca"),col=c(1,2,3,4,5))
 
 survdiff(Surv(time_d, censor_d) ~ raceth, data = actg320, rho = 1)
@@ -337,7 +231,7 @@ Diferença entre raças/etnias __significativa__.
 ```{r}
 modelo7 <- survfit(Surv(time_d, censor_d) ~ ivdrug, data = actg320)
 plot(modelo7,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência \n Quanto ao uso de Drogas Endovenosas", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3),col=c(1,2,3))
+     main = "Estimativa da Curva de Sobrevivência \n Quanto ao uso de Drogas Endovenosas", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3),col=c(1,2,3))
 legend("right",cex=0.6,lty=c(1,2,3),c("Nunca", "Atualmente", "Previamente"),col=c(1,2,3))
 
 survdiff(Surv(time_d, censor_d) ~ ivdrug, data = actg320, rho = 1)
@@ -361,7 +255,7 @@ Diferença entre utilização de drogas endovenosas __significativa__. Poucos ca
 ```{r an exp   hemofilia}
 modelo8 <- survfit(Surv(time_d, censor_d) ~ hemophil, data = actg320)
 plot(modelo8,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: Hemofilia", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2),col=c(1,2))
 legend("right",cex=0.6,lty=c(1,2),c("Hemofílico", "Não Hemofílico"),col=c(1,2))
 
 survdiff(Surv(time_d, censor_d) ~ hemophil, data = actg320, rho = 1)
@@ -382,7 +276,7 @@ Diferença entre hemofílicos e não-hemofílicos __não-significativa__.
 ```{r an exp karnofsky}
 modelo9 <- survfit(Surv(time_d, censor_d) ~ factor(karnof), data = actg320)
 plot(modelo9,
-     main = "Estimativa (Kaplan-Meier) da Curva de Sobrevivência", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
+     main = "Estimativa da Curva de Sobrevivência \n Covariável: Escore de Karnof", xlab = "Tempo", ylab = expression(hat(S)(t)), lty=c(1,2,3,4),col=c(1,2,3,4))
 legend("right",cex=0.6,lty=c(1,2,3,4),c("Normal", "Atividade Normal possível", "Atividade Normal com esforço", "Cuida de si mesmo"),col=c(1,2,3,4))
 
 survdiff(Surv(time_d, censor_d) ~ factor(karnof), data = actg320, rho = 1)
@@ -525,31 +419,98 @@ legend(18,0.2,lty=5,col=6,c("Log-Logística"),bty="n",cex=0.8)
 ```{r}
 attach(actg320)
 # única covar
+modelo1 <- survfit(Surv(time_d, censor_d) ~ factor(karnof))
 modelo1 <- coxph(Surv(time_d, censor_d)~factor(karnof), method = "breslow")
 summary(modelo1)
-plot(cox.zph(modelo1))
+plot(cox.zph(modelo1), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Escore de Karnofski", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
 print(cox.zph(modelo1)) # Não há violação da suposição de riscos proporcionais
 modelo1$loglik
 
 
 modelo2 <- coxph(Surv(time_d, censor_d) ~ factor(strat2), method = "breslow")
 summary(modelo2)
-plot(cox.zph(modelo2))
-print(cox.zph(modelo2)) #rejeita a suposição de proporcionalidade no limiar?
+plot(cox.zph(modelo2), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Estrato # CD4", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
+print(cox.zph(modelo2)) #Inconclusivo
 
 modelo3 <- coxph(Surv(time_d, censor_d) ~ factor(raceth))
 summary(modelo3)
-
+plot(cox.zph(modelo3), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Raça/Etnia", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
+print(cox.zph(modelo3))
 
 modelo4 <- coxph(Surv(time_d, censor_d)~ factor(tx))
 summary(modelo4)
-plot(cox.zph(modelo4))
+plot(cox.zph(modelo4), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Tratamento", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
 print(cox.zph(modelo4)) # Não rejeita a suposição de proporcionalidade
 
 modelo5 <- coxph(Surv(time_d, censor_d) ~ factor(txgrp))
 summary(modelo5)
 plot(cox.zph(modelo5))
 print(cox.zph(modelo5)) # Não rejeita a suposição de proporcionalidade
+
+
+for(i in 1:length(ivdrug)){
+  if(actg320$ivdrug[i] == "1"){
+    ivdrug[i] = "0"
+  }
+  if(actg320$ivdrug[i] == "2"){
+    ivdrug[i] = "1"
+  }
+  if(actg320$ivdrug[i] == "3"){
+    ivdrug[i] = "1"
+  }
+}
+ivdrug<- factor(ivdrug)
+
+modelo3 <- coxph(Surv(time_d, censor_d) ~ factor(ivdrug))
+summary(modelo3)
+plot(cox.zph(modelo3), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Droga EV", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
+print(cox.zph(modelo3))
+
+
+karnof_70_80 <- vector(length = length(actg320$karnof))
+for(i in 1:length(actg320$karnof)){
+  if(actg320$karnof[i] == 70){
+    karnof_70_80[i] = 1
+  }
+  if(actg320$karnof[i] == 80){
+    karnof_70_80[i] = 0
+  }
+}
+
+
+
+karnof_90 <- vector(length = length(actg320$karnof))
+for(i in 1:length(actg320$karnof)){
+    if(actg320$karnof[i] == 90){
+    karnof_90[i] = 1
+  }
+  else{
+    karnof_90[i] = 0
+  }
+}
+
+karnof_90 = factor(karnof_90)
+
+
+modelo7.int <- coxph(Surv(time_d, censor_d) ~ factor(karnof_70))
+summary(modelo7.int)
+plot(cox.zph(modelo7.int), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Escore 70", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
+cox.zph(modelo7.int)
+
+modelo7.int2 <- coxph(Surv(time_d, censor_d)~factor(karnof_90))
+summary(modelo7.int2)
+plot(cox.zph(modelo7.int2), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Escore 90", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
+cox.zph(modelo7.int2)
+
+modelo6 <- coxph(Surv(time_d, censor_d) ~ factor(ivdrug))
+summary(modelo6)
+plot(cox.zph(modelo6), main = "Resíduos de Schoenfeld vs Tempo \n Covariável Uso de Droga Endovenosa", ylab = "Resíduos padronizados de Schoenfeld", xlab = "Tempo")
+print(cox.zph(modelo6)) # Não rejeita
+
+
+modelo11 <- coxph(Surv(time_d, censor_d) ~ factor(txgrp))
+cox.zph(modelo11)
+
 ```
 ```{r}
 modelo6 <- coxph(Surv(time_d, censor_d) ~ factor(karnof) + factor(txgrp) + factor(tx) + age + cd4)
@@ -559,5 +520,14 @@ modelo7 <- coxph(Surv(time_d, censor_d) ~ factor(karnof) + factor(txgrp) + facto
 summary(modelo7)
 
 anova(modelo6, modelo7)
+```
+
+
+```{r organizando}
+modelo1 <- coxph(Surv(time_d, censor_d)~1)
+summary(modelo1)
+
+modelo2 <- coxph(Surv(time_d, censor_d)~tx)
+summary(modelo2)
 ```
 
